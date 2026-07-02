@@ -10,9 +10,10 @@ jobs:
     with:
       working_directory: "."
     secrets:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      # If you want to use service principal credentials instead of OIDC,
+      # pass a single JSON secret named AZURE_CREDENTIALS (see reusable workflow).
     permissions:
       id-token: write
       contents: read
