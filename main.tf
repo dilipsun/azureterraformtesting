@@ -8,7 +8,7 @@ locals {
 resource "azurerm_role_definition" "contributor_no_delete" {
   name        = "Contributor-No-Delete"
   scope       = local.root_mg_scope
-  description = "Contributor-like access with delete operations blocked."
+  description = "Contributor-like access with delete operations blocked"
 
   permissions {
     actions = ["*"]
