@@ -5,6 +5,6 @@ variable "root_management_group_id" {
 }
 
 variable "principal_object_id" {
-  description = "Object ID (user/group/service principal) to receive custom role assignment"
+  description = "Object ID (user/group/service principal) to receive custom role assignment."
   type        = string
 }
