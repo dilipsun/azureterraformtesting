@@ -1,5 +1,5 @@
 variable "root_management_group_id" {
-  description = "Root management group ID. Usually same as tenant ID"
+  description = "Root management group ID. Usually same as tenant ID."
   type        = string
   default     = ""
 }
