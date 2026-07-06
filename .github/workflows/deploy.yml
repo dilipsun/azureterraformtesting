@@ -1,4 +1,4 @@
-name: Terraform Management Group RBAC
+name: Terraform Management Group RBAC.
 
 on:
   pull_request:
