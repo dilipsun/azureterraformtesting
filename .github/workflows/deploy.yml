@@ -61,9 +61,9 @@ jobs:
     needs: fmt_validate
     env:
       ARM_USE_OIDC: true
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       TF_VAR_principal_object_id: ${{ secrets.TF_VAR_PRINCIPAL_OBJECT_ID }}
       TF_VAR_root_management_group_id: ${{ secrets.TF_VAR_ROOT_MANAGEMENT_GROUP_ID }}
 
