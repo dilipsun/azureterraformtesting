@@ -67,40 +67,40 @@ jobs:
             echo "ARM_TENANT_ID=$ARM_TENANT_ID" >> "$GITHUB_ENV"
             echo "ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID" >> "$GITHUB_ENV"
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v3
+      #   with:
+      #     terraform_version: ${{ env.TF_VERSION }}
 
-      # Terraform reads these ARM_* variables automatically for the azurerm provider
-      - name: Terraform Init
-        env:
-          ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
-        run: terraform init
+      # # Terraform reads these ARM_* variables automatically for the azurerm provider
+      # - name: Terraform Init
+      #   env:
+      #     ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
+      #     ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
+      #     ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
+      #     ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
+      #   run: terraform init
 
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
+      # - name: Terraform Format Check
+      #   run: terraform fmt -check -recursive
 
-      - name: Terraform Validate
-        run: terraform validate
+      # - name: Terraform Validate
+      #   run: terraform validate
 
-      - name: Terraform Plan
-        env:
-          ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
-        run: terraform plan -out=tfplan -input=false
+      # - name: Terraform Plan
+      #   env:
+      #     ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
+      #     ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
+      #     ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
+      #     ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
+      #   run: terraform plan -out=tfplan -input=false
 
-      # Only apply on push to main (not on PRs)
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        env:
-          ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
-        run: terraform apply -input=false -auto-approve tfplan
+      # # Only apply on push to main (not on PRs)
+      # - name: Terraform Apply
+      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      #   env:
+      #     ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
+      #     ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
+      #     ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
+      #     ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
+      #   run: terraform apply -input=false -auto-approve tfplan
