@@ -7,7 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Required for OIDC login to Azure (recommended over client secret)
+# Required for OIDC login to Azure.
 permissions:
   id-token: write
   contents: read
@@ -31,20 +31,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- Azure login using the App Registration (service principal) ---
-      # Store these values as GitHub repository/environment secrets.
-      - name: Azure Login
+      # --- Azure login using OIDC only ---
+      # Uses: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+      - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          # If you use a client secret instead of OIDC, replace the three
-          # lines above with:
-          # creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # --- Pull secrets from Azure Key Vault ---
-      # Reads secrets and exposes them as masked outputs for later steps.
+      # --- Pull Terraform auth secrets from Azure Key Vault ---
+      # These are used only by Terraform steps below.
       - name: Get secrets from Key Vault
         id: kv
         uses: azure/cli@v2
@@ -55,14 +52,20 @@ jobs:
 
             ARM_CLIENT_ID=$(az keyvault secret show --vault-name "$VAULT_NAME" --name "arm-client-id" --query value -o tsv)
             ARM_CLIENT_SECRET=$(az keyvault secret show --vault-name "$VAULT_NAME" --name "arm-client-secret" --query value -o tsv)
+            ARM_TENANT_ID=$(az keyvault secret show --vault-name "$VAULT_NAME" --name "arm-tenant-id" --query value -o tsv)
+            ARM_SUBSCRIPTION_ID=$(az keyvault secret show --vault-name "$VAULT_NAME" --name "arm-subscription-id" --query value -o tsv)
 
             # Mask so they never appear in logs
             echo "::add-mask::$ARM_CLIENT_ID"
             echo "::add-mask::$ARM_CLIENT_SECRET"
+            echo "::add-mask::$ARM_TENANT_ID"
+            echo "::add-mask::$ARM_SUBSCRIPTION_ID"
 
             # Expose to later steps via the step environment file
             echo "ARM_CLIENT_ID=$ARM_CLIENT_ID" >> "$GITHUB_ENV"
             echo "ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET" >> "$GITHUB_ENV"
+            echo "ARM_TENANT_ID=$ARM_TENANT_ID" >> "$GITHUB_ENV"
+            echo "ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID" >> "$GITHUB_ENV"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -74,8 +77,8 @@ jobs:
         env:
           ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
         run: terraform init
 
       - name: Terraform Format Check
@@ -88,8 +91,8 @@ jobs:
         env:
           ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
         run: terraform plan -out=tfplan -input=false
 
       # Only apply on push to main (not on PRs)
@@ -98,6 +101,6 @@ jobs:
         env:
           ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
         run: terraform apply -input=false -auto-approve tfplan
